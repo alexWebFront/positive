@@ -7,30 +7,27 @@
       </div>
       <div class="navigation">
         <div class="navigation__title">
-          Программа
+          Схема
         </div>
         <router-link to="/" class="button" style="padding: 0;">
           <img ondrag="return false" ondragdrop="return false" ondragstart="return false"
                src="../assets/images/icons/close.svg" alt="" class="close">
         </router-link>
       </div>
-      <pinch-zoom
+      <div class="map">
+        <pinch-zoom
           backgroundColor="transparent"
-          :doubleTap="false"
+          :doubleTap="true"
           disableZoomControl="disable"
-          :zoomControlScale="1"
-          :wheel="true"
-          :limitZoom="10"
-          :limitPan="false"
-          :minScale="1"
-      >
-        <div class="map-content ">
-          <div class="pinch-wrapper">
-            <img class="map pinch-img" src="../assets/images/2.png" alt="">
-          </div>
-        </div>
+          :wheel="false"
+          :limitZoom="2"
+          :limitPan="true"
+          ref="pinch"
+        >
+          <img class="pinch-img" src="../assets/images/2.png" alt="">
 
-      </pinch-zoom>
+        </pinch-zoom>
+      </div>
       <div class="page__bottom">
         <div class="mouse-container">
           <img ondrag="return false" ondragdrop="return false" ondragstart="return false" class=""
@@ -41,11 +38,13 @@
                src="../assets/images/icons/arrow-right.svg" alt="">
         </div>
         <div class="button-container">
-          <img ondrag="return false" ondragdrop="return false" ondragstart="return false" class="plus"
+          <img @click="zoomIn" :class="{disabled: zoom}" ondrag="return false" ondragdrop="return false"
+               ondragstart="return false" class="plus"
                src="../assets/images/icons/plus.svg" alt="">
-          <img ondrag="return false" ondragdrop="return false" ondragstart="return false" class="minus"
+          <img @click="zoomOut" :class="{disabled: !zoom}" ondrag="return false" ondragdrop="return false"
+               ondragstart="return false" class="minus"
                src="../assets/images/icons/minus.svg" alt="">
-          <img ondrag="return false" ondragdrop="return false" ondragstart="return false" class="tg"
+          <img @click="position" ondrag="return false" ondragdrop="return false" ondragstart="return false" class="tg"
                src="../assets/images/icons/tg.svg" alt="">
         </div>
       </div>
@@ -56,102 +55,52 @@
 <script>
 export default {
   name: "Scheme",
+  data() {
+    return {
+      zoom: false,
+    }
+  },
+  methods: {
+    zoomOut() {
+      this.zoom = false;
+      this.$refs.pinch.toggleZoom()
+    },
+    zoomIn() {
+      this.zoom = true;
+      this.$refs.pinch.toggleZoom()
+    },
+    position() {
+      const pinchContainer = document.querySelector('.pinch-zoom-content');
+      let scrollToCenter = document.querySelector('.map');
+      if (this.zoom) {
+        scrollToCenter.scrollTo(400000, 0);
+        pinchContainer.style.transform = 'matrix(2, 0, 0, 2, -2400, -1250)'
+      } else {
+        scrollToCenter.scrollTo(30000, 0);
+        pinchContainer.style.transform = 'matrix(1, 0, 0, 1, 0, 0)'
+      }
+      //   ТУТ КОРОЧЕ НИЖЕ ДЛЯ ТОЧКИ КОТОРАЯ В ЦЕНТРЕ
+      // if (this.zoom) {
+      //   scrollToCenter.scrollTo(450, 0);
+      //   pinchContainer.style.transform = 'matrix(2, 0, 0, 2, -1027.95, -669)'
+      // } else {
+      //   scrollToCenter.scrollTo(450, 0);
+      //   pinchContainer.style.transform = 'matrix(1, 0, 0, 1, 0, 0)'
+      // }
+    }
+  },
   mounted() {
+    let scrollToCenter = document.querySelector('.map');
+    scrollToCenter.scrollTo(825, 0);
+
+    const pinchContainer = document.querySelector('.pinch-zoom-content');
+    // this.$refs.pinch.toggleZoom()
+    // this.$refs.pinch.toggleZoom()
+    // pinchContainer.style.transform = 'matrix(2, 0, 0, 2, 0, 0)'
     document.oncontextmenu = function (e) {
       return false
     };
-    window.onload = function () {
-      let scrollToCenter = document.querySelector('.map-content');
-      scrollToCenter.scrollTo(825, 0);
-    }
 
-    let plus = document.querySelector('.plus');
-    let minus = document.querySelector('.minus');
-    let tg = document.querySelector('.tg');
-    let scrollToPoint = document.querySelector('.map-content');
-    let map = document.querySelector('.map');
-    let initialScale = 1;
-    let marginTop = 0;
-    let marginLeft = 0;
-
-    tg.onclick = () => {
-      initialScale = 1;
-      marginTop = 0;
-      marginLeft = 0;
-      scrollToPoint.scrollTo(2000, 0);
-      map.style.transform = `scale(${initialScale})`;
-      map.style.marginTop = `${marginTop}px`;
-      map.style.marginLeft = `${marginLeft}px`;
-    }
-
-    plus.onclick = () => {
-      initialScale += 0.1;
-      marginTop += 100;
-      marginLeft += 110;
-      map.style.transform = `scale(${initialScale})`;
-      map.style.marginTop = `${marginTop}px`;
-      map.style.marginLeft = `${marginLeft}px`;
-
-      if (initialScale === 1) {
-        initialScale = 1;
-        marginTop = 0;
-        marginLeft = 0;
-        map.style.marginLeft = `${marginLeft}px`;
-        map.style.transform = `scale(${initialScale})`;
-        map.style.marginTop = `${marginTop}px`;
-      }
-
-      if (initialScale < 1) {
-        marginTop = 0;
-        marginLeft = 0;
-        map.style.marginLeft = `${marginLeft}px`;
-        map.style.marginTop = `${marginTop}px`;
-      }
-
-      if (initialScale > 1.3) {
-        initialScale = 1.3;
-        marginTop = 300;
-        marginLeft = 330;
-        map.style.marginLeft = `${marginLeft}px`;
-        map.style.transform = `scale(${initialScale})`;
-        map.style.marginTop = `${marginTop}px`;
-      }
-    }
-
-    minus.onclick = () => {
-
-      initialScale -= 0.1;
-      marginTop -= 100;
-      marginLeft -= 110;
-      map.style.transform = `scale(${initialScale})`;
-      map.style.marginTop = `${marginTop}px`;
-      map.style.marginLeft = `${marginLeft}px`;
-
-      if (initialScale === 1) {
-        marginTop = 0;
-        marginLeft = 0;
-        initialScale = 1;
-        map.style.marginLeft = `${marginLeft}px`;
-        map.style.marginTop = `${marginTop}px`;
-        map.style.transform = `scale(${initialScale})`;
-      }
-      if (initialScale > 1) {
-        // initialScale -= 0.1;
-        map.style.transform = `scale(${initialScale})`;
-      }
-
-      if (initialScale === 1 || initialScale < 1) {
-        marginTop = 0;
-        marginLeft = 0;
-        map.style.marginLeft = `${marginLeft}px`;
-        map.style.marginTop = `${marginTop}px`;
-      }
-
-      if (initialScale <= 0.7) {
-        initialScale = 0.7;
-        map.style.transform = `scale(${initialScale})`;
-      }
-    }
 
 //Timeout
     function inactivityTime() {
@@ -180,33 +129,43 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+img.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pinch-zoom-content,
+.pinch-zoom-wrapper {
+  width: 2600px !important;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+}
+
+.map {
+  margin: 0 auto;
+  width: 1080px;
+  height: 1230px;
+  position: relative;
+  overflow: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 .pinch-img {
-  width: 3081px;
+  width: 2600px;
+  height: 1230px;
+  max-width: 2600px;
 }
 
 .map-content::-webkit-scrollbar {
   display: none;
 }
-
-.map-content {
-  width: 100%;
-  /*width: 3081px;*/
-  height: 1229px;
-
-  overflow-x: scroll;
-  overflow-y: scroll;
-  white-space: nowrap;
-}
-
-.map {
-  width: 3081px;
-  height: 1229px;
-  transform: scale(1);
-  transition: all 700ms;
-}
-
 
 .button-container {
   display: flex;
